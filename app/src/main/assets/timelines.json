@@ -1,0 +1,54 @@
+{
+  "timelines": [
+    {
+      "title": "Civil Rights Movement",
+      "timelinePoints": [1955, 1963, 1965, 1968],
+      "timeLineCorrectAnswers": ["Montgomery Bus Boycott", "March on Washington", "Voting Rights Act", "Assassination of Martin Luther King Jr."]
+    },
+    {
+      "title": "Scientific Discoveries",
+      "timelinePoints": [1543, 1859, 1905, 1962],
+      "timeLineCorrectAnswers": ["Copernicus' Heliocentric Model", "Darwin's Theory of Evolution", "Einstein's Theory of Relativity", "Discovery of DNA Structure"]
+    },
+    {
+      "title": "Space Exploration Milestones",
+      "timelinePoints": [1957, 1961, 1969, 1981],
+      "timeLineCorrectAnswers": ["Launch of Sputnik 1", "First Human in Space (Yuri Gagarin)", "First Moon Landing (Apollo 11)", "First Space Shuttle Launch (Columbia)"]
+    },
+    {
+      "title": "Medical Breakthroughs",
+      "timelinePoints": [1796, 1928, 1953, 1981],
+      "timeLineCorrectAnswers": ["First Smallpox Vaccination", "Discovery of Penicillin", "Discovery of DNA Structure", "First Test-Tube Baby Born (IVF)"]
+    },
+    {
+      "title": "Technological Advancements",
+      "timelinePoints": [1450, 1876, 1947, 2007],
+      "timeLineCorrectAnswers": ["Invention of the Printing Press", "Invention of the Telephone", "Invention of the Transistor", "Launch of the iPhone"]
+    },
+    {
+      "title": "Exploration Expeditions",
+      "timelinePoints": [1492, 1768, 1804, 1969],
+      "timeLineCorrectAnswers": ["Christopher Columbus' First Voyage to the Americas", "James Cook's Expedition to the South Pacific", "Lewis and Clark Expedition across North America", "Apollo 11 Moon Landing"]
+    },
+    {
+      "title": "Political Revolutions",
+      "timelinePoints": [1776, 1789, 1917, 1949],
+      "timeLineCorrectAnswers": ["American Revolution", "French Revolution", "Russian Revolution", "Chinese Communist Revolution"]
+    },
+    {
+      "title": "Industrial Revolution Innovations",
+      "timelinePoints": [1764, 1785, 1837, 1879],
+      "timeLineCorrectAnswers": ["Invention of the Spinning Jenny", "Invention of the Power Loom", "Invention of the Steam Hammer", "Invention of the Electric Light Bulb"]
+    },
+    {
+      "title": "Artistic Movements",
+      "timelinePoints": [1400, 1500, 1880, 1920],
+      "timeLineCorrectAnswers": ["Renaissance", "Baroque Era", "Impressionism", "Surrealism"]
+    },
+    {
+      "title": "Economic Crises",
+      "timelinePoints": [1929, 1973, 2008, 2020],
+      "timeLineCorrectAnswers": ["Great Depression", "Oil Crisis", "Global Financial Crisis", "COVID-19 Pandemic"]
+    }
+  ]
+}
