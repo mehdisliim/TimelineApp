@@ -3,6 +3,8 @@ package com.example.timelineapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -10,6 +12,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -166,6 +170,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setButtonClickListener(Button btn){
+        btn.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View v, DragEvent event) {
+                int action = event.getAction();
+                switch (action) {
+                    case DragEvent.ACTION_DROP:
+                        btn.performClick();
+                        break;
+
+                }
+            return true; // return always true : https://stackoverflow.com/questions/21670807/ondrag-cannot-receive-dragevent-action-drop
+            }
+        });
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -225,10 +243,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setTimeLineDescriptionClickListener(TextView tv) {
-        tv.setOnClickListener(new View.OnClickListener() {
+        tv.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View view) {
-                applyBorder((TextView) view);
+            public boolean onLongClick(View view) {
+                ClipData.Item item = new ClipData.Item(tv.getText());
+                String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
+                ClipData data = new ClipData(tv.getText(), mimeTypes, item);
+                View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(tv);
+
+                selectedEventDescription = tv;
+
+                tv.startDragAndDrop(data, shadowBuilder, tv, 0);
+                return true;
             }
         });
     }
