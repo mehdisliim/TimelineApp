@@ -1,24 +1,24 @@
 package com.example.timelineapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
+import android.content.res.Configuration;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.DragEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.timelineapp.databinding.LayoutMainLandscapeBinding;
+import com.example.timelineapp.databinding.CustomActionBarBinding;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -29,128 +29,105 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    TextView timelineDesc4, timelineDesc3, timelineDesc2, timelineDesc1, tv_lives_left, tv_total_xp, timeLineTitle;
-    Button year1Btn, year2Btn, year3Btn, year4Btn, startAgainBtn;
 
+    private LayoutMainLandscapeBinding activityMainBinding;
+    private CustomActionBarBinding customActionBarBinding;
     TextView selectedEventDescription;
     Button selectedYearBtn;
 
     String XP_TEXT_EXTRA = "XP_TEXT_EXTRA";
 
-    private final int MAX_EVENTS_SIZE = 4;
-
-    LinearLayout timelinesDescContainer;
+    public static final int MAX_EVENTS_SIZE = 4;
     Timeline chosenTimeline;
+    GameViewModel gameViewModel;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setContentView(R.layout.activity_main_portrait);
 
-        Intent intent = getIntent();
+        } else {
+            setContentView(R.layout.layout_main_landscape);
+            gameViewModel = new ViewModelProvider(this).get(GameViewModel.class);
 
-        year1Btn = findViewById(R.id.button1Timeline);
-        year2Btn = findViewById(R.id.button2Timeline);
-        year3Btn = findViewById(R.id.button3Timeline);
-        year4Btn = findViewById(R.id.button4Timeline);
-        startAgainBtn = findViewById(R.id.btn_start_again);
+            Intent intent = getIntent();
 
-        tv_total_xp = findViewById(R.id.xp_text);
-        tv_lives_left = findViewById(R.id.tv_lives_left);
+            activityMainBinding = LayoutMainLandscapeBinding.inflate(getLayoutInflater());
+            setContentView(activityMainBinding.getRoot());
 
-
-        timelineDesc4 = findViewById(R.id.timelineDesc4);
-        timelineDesc3 = findViewById(R.id.timelineDesc3);
-        timelineDesc2 = findViewById(R.id.timelineDesc2);
-        timelineDesc1 = findViewById(R.id.timelineDesc1);
-        timelinesDescContainer = findViewById(R.id.timelines_desc_view_holder);
-
-        timeLineTitle = findViewById(R.id.timeline_title);
-
-        setAllButtonsClickListener();
-        setAllTimeLinesDescriptionClickListener();
-
-        if (intent != null && intent.getExtras() != null && intent.getExtras().get(XP_TEXT_EXTRA) != null){
-            tv_total_xp.setText(intent.getExtras().get(XP_TEXT_EXTRA).toString());
-        }
+            customActionBarBinding = CustomActionBarBinding.bind(activityMainBinding.getRoot().findViewById(R.id.customActionBar));
 
 
-        TimelineList timelineList = null;
-        String json = loadJSONFromAsset("timelines.json");
-        if (json != null) {
-            Gson gson = new Gson();
-            timelineList = gson.fromJson(json, TimelineList.class);
-        }
+            setAllButtonsClickListener();
+            setAllTimeLinesDescriptionClickListener();
 
-        setTimeLinesDescriptionAndYearButtonsText(timelineList);
-
-        startAgainBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-
-                Intent intent = new Intent(view.getContext(), MainActivity.class);
-                startActivity(intent);
+            if (gameViewModel.getHearts() != null){
+                customActionBarBinding.tvLivesLeft.setText(gameViewModel.getHearts().toString());
             }
-        });
 
 
-        Log.e("TAG", "Error reading JSON from asset "+timelineList);
+            if (gameViewModel.getXp() != null){
+                customActionBarBinding.xpText.setText(gameViewModel.getXp().toString() + " XP");
+            }
+
+
+            if (gameViewModel.getXp() == 0 && intent != null && intent.getExtras() != null && intent.getExtras().get(XP_TEXT_EXTRA) != null) {
+                customActionBarBinding.xpText.setText(intent.getExtras().get(XP_TEXT_EXTRA).toString());
+            }
+
+
+            TimelineList timelineList = null;
+            String json = loadJSONFromAsset("timelines.json");
+            if (json != null) {
+                Gson gson = new Gson();
+                timelineList = gson.fromJson(json, TimelineList.class);
+            }
+
+            setTimeLinesDescriptionAndYearButtonsText(timelineList);
+
+            activityMainBinding.btnStartAgain.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    finish();
+
+                    Intent intent = new Intent(view.getContext(), MainActivity.class);
+                    startActivity(intent);
+                }
+            });
+
+            Log.e("TAG", "Error reading JSON from asset " + timelineList);
+        }
     }
 
-
     private String loadJSONFromAsset(String filename) {
-            String json = null;
-            try {
-                InputStream is = getAssets().open(filename);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
-                }
-                reader.close();
-                json = sb.toString();
-            } catch (IOException e) {
-                Log.e("MEHDI-DEBUG", "Error reading JSON from asset", e);
+        String json = null;
+        try {
+            InputStream is = getAssets().open(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
             }
+            reader.close();
+            json = sb.toString();
+        } catch (IOException e) {
+            Log.e("MEHDI-DEBUG", "Error reading JSON from asset", e);
+        }
         return json;
     }
 
-
-    private void applyBorder(TextView textView) {
-        GradientDrawable borderDrawable = new GradientDrawable();
-        borderDrawable.setStroke(5, Color.BLACK);
-        borderDrawable.setColor(Color.TRANSPARENT);
-        textView.setBackground(borderDrawable);
-
-        textView.setTag("border_applied");
-
-        selectedEventDescription = textView;
-
-        removeCurSelectedDescBorder(textView);
-    }
-
-    private void removeCurSelectedDescBorder(TextView textView) {
-
-        for(int i = 0; i < timelinesDescContainer.getChildCount(); i++){
-            TextView tv = (TextView) timelinesDescContainer.getChildAt(i);
-            Log.e("MEHDI-DEBUG", "removeCurSelectedDescBorder: "+tv.getTag()  );
-            if (tv != null && tv.getTag() != null && tv.getTag().toString().equals("border_applied") && !tv.equals(textView) ){
-                tv.setTag("");
-                tv.setBackground(null);
-            }
-        }
-
-    }
 
     private boolean checkForCorrectMatch() {
 
         if (selectedEventDescription != null && selectedYearBtn != null) {
             int chosenEventDescIndex = chosenTimeline.getTimeLineCorrectAnswers().indexOf(selectedEventDescription.getText().toString());
             int chosenYearIndex = chosenTimeline.getTimelinePoints().indexOf(Integer.parseInt(selectedYearBtn.getText().toString()));
+
             if (chosenYearIndex == chosenEventDescIndex) {
+                gameViewModel.addCorrectAnsweredEventInList(chosenYearIndex);
                 new AlertDialog.Builder(this).setMessage("Correct!  ✔️").create().show();
                 selectedEventDescription.setVisibility(View.GONE);
                 MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.correct);
@@ -162,14 +139,11 @@ public class MainActivity extends AppCompatActivity {
                 mediaPlayer.start();
                 return false;
             }
-
         }
         return false;
-
-
     }
 
-    private void setButtonClickListener(Button btn){
+    private void setButtonClickListener(Button btn) {
         btn.setOnDragListener(new View.OnDragListener() {
             @Override
             public boolean onDrag(View v, DragEvent event) {
@@ -180,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                 }
-            return true; // return always true : https://stackoverflow.com/questions/21670807/ondrag-cannot-receive-dragevent-action-drop
+                return true; // return always true : https://stackoverflow.com/questions/21670807/ondrag-cannot-receive-dragevent-action-drop
             }
         });
 
@@ -189,13 +163,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 selectedYearBtn = (Button) view;
                 checkForCorrectMatch();
-                if (checkForCorrectMatch()){
+                if (checkForCorrectMatch()) {
                     selectedYearBtn.setVisibility(View.GONE);
-                    int totalXP = Integer.parseInt(tv_total_xp.getText().toString().replace(" XP", ""));
+                    int totalXP = Integer.parseInt(customActionBarBinding.xpText.getText().toString().replace(" XP", ""));
                     totalXP += 10;
-                    tv_total_xp.setText(String.valueOf(totalXP + " XP"));
+                    gameViewModel.setXp(totalXP);
 
-                    if (totalXP % 40 == 0){
+                    customActionBarBinding.xpText.setText(String.valueOf(totalXP + " XP"));
+
+                    if (totalXP % 40 == 0) {
                         AlertDialog.Builder dialog = new AlertDialog.Builder(view.getContext()).setMessage("CONGRATULATION! you won the round!");
                         dialog.setCancelable(false);
                         dialog.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
@@ -204,42 +180,63 @@ public class MainActivity extends AppCompatActivity {
                                 finish();
 
                                 Intent intent = new Intent(view.getContext(), MainActivity.class);
-                                intent.putExtra(XP_TEXT_EXTRA, tv_total_xp.getText().toString());
+                                intent.putExtra(XP_TEXT_EXTRA, customActionBarBinding.xpText.getText().toString());
                                 startActivity(intent);
                             }
                         });
                         dialog.show();
                     }
-                }else {
-                    int livesLeft = Integer.parseInt(tv_lives_left.getText().toString());
-                    livesLeft -=1;
-                    if(livesLeft == -1){
+                } else {
+                    int livesLeft = Integer.parseInt(customActionBarBinding.tvLivesLeft.getText().toString());
+                    livesLeft -= 1;
+                    gameViewModel.setHearts(livesLeft);
+                    if (livesLeft == -1) {
                         new AlertDialog.Builder(view.getContext()).setMessage("Unfortunately! You Lost the Round!").create().show();
                         finish();
 
                         Intent intent = new Intent(view.getContext(), MainActivity.class);
                         startActivity(intent);
                     }
-                    tv_lives_left.setText(String.valueOf(livesLeft));
-
-
+                    customActionBarBinding.tvLivesLeft.setText(String.valueOf(livesLeft));
                 }
             }
         });
     }
 
     private void setAllButtonsClickListener() {
-        setButtonClickListener(year1Btn);
-        setButtonClickListener(year2Btn);
-        setButtonClickListener(year3Btn);
-        setButtonClickListener(year4Btn);
+        ArrayList<Button> listOfYearButtons = new ArrayList<>();
+        listOfYearButtons.add(activityMainBinding.button1Timeline);
+        listOfYearButtons.add(activityMainBinding.button2Timeline);
+        listOfYearButtons.add(activityMainBinding.button3Timeline);
+        listOfYearButtons.add(activityMainBinding.button4Timeline);
+
+
+        for (int i = 0; i < MAX_EVENTS_SIZE; i++) {
+            if (gameViewModel.isEventAlreadyAnsweredCorrectly(i)) {
+                listOfYearButtons.get(i).setVisibility(View.GONE);
+            } else {
+                setButtonClickListener(listOfYearButtons.get(i));
+            }
+
+        }
+
     }
 
     private void setAllTimeLinesDescriptionClickListener() {
-        setTimeLineDescriptionClickListener(timelineDesc1);
-        setTimeLineDescriptionClickListener(timelineDesc2);
-        setTimeLineDescriptionClickListener(timelineDesc3);
-        setTimeLineDescriptionClickListener(timelineDesc4);
+        ArrayList<TextView> listOfYearEventDescription = new ArrayList<>();
+        listOfYearEventDescription.add(activityMainBinding.timelineDesc1);
+        listOfYearEventDescription.add(activityMainBinding.timelineDesc2);
+        listOfYearEventDescription.add(activityMainBinding.timelineDesc3);
+        listOfYearEventDescription.add(activityMainBinding.timelineDesc4);
+
+
+        for (int i = 0; i < MAX_EVENTS_SIZE; i++) {
+            if (gameViewModel.isEventAlreadyAnsweredCorrectly(i)) {
+                listOfYearEventDescription.get(i).setVisibility(View.GONE);
+            } else {
+                setTimeLineDescriptionClickListener(listOfYearEventDescription.get(i));
+            }
+        }
     }
 
     private void setTimeLineDescriptionClickListener(TextView tv) {
@@ -259,55 +256,84 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setTimeLinesDescriptionAndYearButtonsText(TimelineList timelineList){
+    private void setTimeLinesDescriptionAndYearButtonsText(TimelineList timelineList) {
         Random random = new Random();
 
         int randomNumber = random.nextInt(timelineList.getTimelines().size());
 
-        chosenTimeline = timelineList.getTimelines().get(randomNumber); //choosen timeline to show
+        if (gameViewModel.chosenTimeline != null && !(gameViewModel.getXp() % 40 == 0)) {
+            chosenTimeline = gameViewModel.chosenTimeline;
+        } else {
+            chosenTimeline = timelineList.getTimelines().get(randomNumber); //chosen timeline to show
+            gameViewModel.setChosenTimeline(chosenTimeline);
+        }
 
-        timeLineTitle.setText(chosenTimeline.getTitle());// set timeline title
+        customActionBarBinding.timelineTitle.setText(chosenTimeline.getTitle());// set timeline title
 
-        shuffleAndSetTimelineDescriptionsTexts(chosenTimeline);
+        shuffleAndSetTimelineDescriptionsTextsV2(chosenTimeline);
 
-
-        year1Btn.setText(chosenTimeline.getTimelinePoints().get(0).toString());
-        year2Btn.setText(chosenTimeline.getTimelinePoints().get(1).toString());
-        year3Btn.setText(chosenTimeline.getTimelinePoints().get(2).toString());
-        year4Btn.setText(chosenTimeline.getTimelinePoints().get(3).toString());
+        activityMainBinding.button1Timeline.setText(chosenTimeline.getTimelinePoints().get(0).toString());
+        activityMainBinding.button2Timeline.setText(chosenTimeline.getTimelinePoints().get(1).toString());
+        activityMainBinding.button3Timeline.setText(chosenTimeline.getTimelinePoints().get(2).toString());
+        activityMainBinding.button4Timeline.setText(chosenTimeline.getTimelinePoints().get(3).toString());
     }
 
-    private void shuffleAndSetTimelineDescriptionsTexts(Timeline chosenTimeline){
+    private void shuffleAndSetTimelineDescriptionsTextsV2(Timeline chosenTimeline) {
+        ArrayList<Integer> alreadySetTimelineDescriptionIndices = new ArrayList<>(gameViewModel.correctAnsweredEvents);
+        ArrayList<TextView> listOfYearEventDescription = new ArrayList<>();
+        if (!alreadySetTimelineDescriptionIndices.contains(0)){
+            listOfYearEventDescription.add(activityMainBinding.timelineDesc1);
+        }
+        if (!alreadySetTimelineDescriptionIndices.contains(1)){
+            listOfYearEventDescription.add(activityMainBinding.timelineDesc2);
+        }
+        if (!alreadySetTimelineDescriptionIndices.contains(2)){
+            listOfYearEventDescription.add(activityMainBinding.timelineDesc3);
+        }
+        if (!alreadySetTimelineDescriptionIndices.contains(3)){
+            listOfYearEventDescription.add(activityMainBinding.timelineDesc4);
+        }
 
-        ArrayList<Integer> alreadySetTimelineDescriptionIndices = new ArrayList<Integer>();
+        Random random = new Random();
+        for (TextView timeLineDescriptionTv : listOfYearEventDescription) {
+            int randomNumber;
+            do {
+                randomNumber = random.nextInt(MAX_EVENTS_SIZE);
+            } while (alreadySetTimelineDescriptionIndices.contains(randomNumber) && alreadySetTimelineDescriptionIndices.size() < MAX_EVENTS_SIZE);
 
+            if (alreadySetTimelineDescriptionIndices.size() < MAX_EVENTS_SIZE) {
 
+                alreadySetTimelineDescriptionIndices.add(randomNumber);
+                timeLineDescriptionTv.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
+            }
+        }
 
-       while(alreadySetTimelineDescriptionIndices.size() != MAX_EVENTS_SIZE){
+    }
+
+    private void shuffleAndSetTimelineDescriptionsTexts(Timeline chosenTimeline) {
+
+        ArrayList<Integer> alreadySetTimelineDescriptionIndices = new ArrayList<>(gameViewModel.correctAnsweredEvents);
+        while (alreadySetTimelineDescriptionIndices.size() != MAX_EVENTS_SIZE) {
             Random random = new Random();
 
             int randomNumber = random.nextInt(MAX_EVENTS_SIZE);
-            if(!alreadySetTimelineDescriptionIndices.contains(randomNumber)){
+            if (!alreadySetTimelineDescriptionIndices.contains(randomNumber)) {
                 alreadySetTimelineDescriptionIndices.add(randomNumber);
 
-                if (alreadySetTimelineDescriptionIndices.size() == 1){
-                    timelineDesc1.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-
+                if (alreadySetTimelineDescriptionIndices.size() == 1) {
+                    activityMainBinding.timelineDesc1.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
                 }
 
-                if (alreadySetTimelineDescriptionIndices.size() == 2){
-                    timelineDesc2.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-
+                if (alreadySetTimelineDescriptionIndices.size() == 2) {
+                    activityMainBinding.timelineDesc2.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
                 }
 
-                if (alreadySetTimelineDescriptionIndices.size() == 3){
-                    timelineDesc3.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-
+                if (alreadySetTimelineDescriptionIndices.size() == 3) {
+                    activityMainBinding.timelineDesc3.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
                 }
 
-                if (alreadySetTimelineDescriptionIndices.size() == 4){
-                    timelineDesc4.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-
+                if (alreadySetTimelineDescriptionIndices.size() == 4) {
+                    activityMainBinding.timelineDesc4.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
                 }
             }
         }
