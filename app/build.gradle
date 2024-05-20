@@ -34,6 +34,13 @@ android {
 }
 
 dependencies {
+    implementation "androidx.room:room-runtime:2.4.0" // Room runtime
+    implementation "androidx.room:room-runtime:2.4.3"
+    annotationProcessor "androidx.room:room-compiler:2.4.3"
+
+    // Optional: Kotlin extensions and Coroutines support
+    implementation "androidx.room:room-ktx:2.4.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'

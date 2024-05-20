@@ -2,6 +2,7 @@ package com.example.timelineapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.room.Room;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -17,6 +18,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.timelineapp.DataBase.XP;
+import com.example.timelineapp.DataBase.XPDatabase;
 import com.example.timelineapp.databinding.LayoutMainLandscapeBinding;
 import com.example.timelineapp.databinding.CustomActionBarBinding;
 import com.google.gson.Gson;
@@ -41,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     Timeline chosenTimeline;
     GameViewModel gameViewModel;
 
+    XPDatabase db;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,16 +54,23 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main_portrait);
 
         } else {
+
             setContentView(R.layout.layout_main_landscape);
             gameViewModel = new ViewModelProvider(this).get(GameViewModel.class);
 
             Intent intent = getIntent();
 
             activityMainBinding = LayoutMainLandscapeBinding.inflate(getLayoutInflater());
+
             setContentView(activityMainBinding.getRoot());
 
             customActionBarBinding = CustomActionBarBinding.bind(activityMainBinding.getRoot().findViewById(R.id.customActionBar));
 
+            db = XPDatabase.getInstance(getApplicationContext());
+
+            if (db.xpDao().getUserXP(GameViewModel.USER_ID) == null){
+                db.xpDao().insert(new XP(0));
+            }
 
             setAllButtonsClickListener();
             setAllTimeLinesDescriptionClickListener();
@@ -67,16 +79,13 @@ public class MainActivity extends AppCompatActivity {
                 customActionBarBinding.tvLivesLeft.setText(gameViewModel.getHearts().toString());
             }
 
-
             if (gameViewModel.getXp() != null){
                 customActionBarBinding.xpText.setText(gameViewModel.getXp().toString() + " XP");
             }
 
-
             if (gameViewModel.getXp() == 0 && intent != null && intent.getExtras() != null && intent.getExtras().get(XP_TEXT_EXTRA) != null) {
                 customActionBarBinding.xpText.setText(intent.getExtras().get(XP_TEXT_EXTRA).toString());
             }
-
 
             TimelineList timelineList = null;
             String json = loadJSONFromAsset("timelines.json");
@@ -152,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
                     case DragEvent.ACTION_DROP:
                         btn.performClick();
                         break;
-
                 }
                 return true; // return always true : https://stackoverflow.com/questions/21670807/ondrag-cannot-receive-dragevent-action-drop
             }
@@ -169,9 +177,35 @@ public class MainActivity extends AppCompatActivity {
                     totalXP += 10;
                     gameViewModel.setXp(totalXP);
 
+
+                    XP userXP = db.xpDao().getUserXP(GameViewModel.USER_ID);
+                    boolean newHighXpReached = userXP != null && userXP.experiencePoints < totalXP;
+                    if (newHighXpReached){
+                        db.xpDao().updateUserXP(GameViewModel.USER_ID, totalXP);
+                    }
+
+
                     customActionBarBinding.xpText.setText(String.valueOf(totalXP + " XP"));
 
                     if (totalXP % 40 == 0) {
+                        if (newHighXpReached){
+                            AlertDialog.Builder dialog = new AlertDialog.Builder(view.getContext()).setMessage(" ⭐⭐⭐ New Highest XP Reached! CONGRATULATION ! Highest Score :"+ userXP.getExperiencePoints());
+                            dialog.setCancelable(false);
+                            dialog.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    finish();
+
+                                    Intent intent = new Intent(view.getContext(), MainActivity.class);
+                                    intent.putExtra(XP_TEXT_EXTRA, customActionBarBinding.xpText.getText().toString());
+                                    startActivity(intent);
+                                }
+                            });
+                            dialog.show();
+                        }
+                        else {
+
+
                         AlertDialog.Builder dialog = new AlertDialog.Builder(view.getContext()).setMessage("CONGRATULATION! you won the round!");
                         dialog.setCancelable(false);
                         dialog.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
@@ -185,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                         dialog.show();
+                    }
                     }
                 } else {
                     int livesLeft = Integer.parseInt(customActionBarBinding.tvLivesLeft.getText().toString());

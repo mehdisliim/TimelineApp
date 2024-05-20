@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 
 public class GameViewModel extends ViewModel {
-
+    public final static Integer USER_ID = 123;
     Timeline chosenTimeline;
     ArrayList<Integer> correctAnsweredEvents = new ArrayList<Integer>();
 
