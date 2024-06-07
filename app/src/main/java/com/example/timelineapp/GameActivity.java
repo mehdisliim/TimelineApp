@@ -2,7 +2,6 @@ package com.example.timelineapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.room.Room;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -18,8 +17,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.timelineapp.DataBase.XP;
-import com.example.timelineapp.DataBase.XPDatabase;
+import com.example.timelineapp.DataBase.User;
+import com.example.timelineapp.DataBase.UserDatabase;
 import com.example.timelineapp.databinding.LayoutMainLandscapeBinding;
 import com.example.timelineapp.databinding.CustomActionBarBinding;
 import com.google.gson.Gson;
@@ -31,7 +30,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity {
 
     private LayoutMainLandscapeBinding activityMainBinding;
     private CustomActionBarBinding customActionBarBinding;
@@ -44,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     Timeline chosenTimeline;
     GameViewModel gameViewModel;
 
-    XPDatabase db;
+    UserDatabase db;
 
 
     @Override
@@ -66,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
 
             customActionBarBinding = CustomActionBarBinding.bind(activityMainBinding.getRoot().findViewById(R.id.customActionBar));
 
-            db = XPDatabase.getInstance(getApplicationContext());
+            db = UserDatabase.getInstance(getApplicationContext());
 
-            if (db.xpDao().getUserXP(GameViewModel.USER_ID) == null){
-                db.xpDao().insert(new XP(0));
+            if (db.UserDao().getUser(GameViewModel.USER_ID) == null){
+                Log.e("HOANG_DEBUG", "NO USER SAVED IN DB");
             }
 
             setAllButtonsClickListener();
@@ -101,13 +100,21 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     finish();
 
-                    Intent intent = new Intent(view.getContext(), MainActivity.class);
+                    Intent intent = new Intent(view.getContext(), GameActivity.class);
                     startActivity(intent);
                 }
             });
 
             Log.e("TAG", "Error reading JSON from asset " + timelineList);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+        startActivity(intent);
+        finish();
+        super.onBackPressed();
     }
 
     private String loadJSONFromAsset(String filename) {
@@ -178,10 +185,10 @@ public class MainActivity extends AppCompatActivity {
                     gameViewModel.setXp(totalXP);
 
 
-                    XP userXP = db.xpDao().getUserXP(GameViewModel.USER_ID);
-                    boolean newHighXpReached = userXP != null && userXP.experiencePoints < totalXP;
+                    User userUser = db.UserDao().getUser(GameViewModel.USER_ID);
+                    boolean newHighXpReached = userUser != null && userUser.experiencePoints < totalXP;
                     if (newHighXpReached){
-                        db.xpDao().updateUserXP(GameViewModel.USER_ID, totalXP);
+                        db.UserDao().updateUserXP(GameViewModel.USER_ID, totalXP);
                     }
 
 
@@ -189,14 +196,14 @@ public class MainActivity extends AppCompatActivity {
 
                     if (totalXP % 40 == 0) {
                         if (newHighXpReached){
-                            AlertDialog.Builder dialog = new AlertDialog.Builder(view.getContext()).setMessage(" ⭐⭐⭐ New Highest XP Reached! CONGRATULATION ! Highest Score :"+ userXP.getExperiencePoints());
+                            AlertDialog.Builder dialog = new AlertDialog.Builder(view.getContext()).setMessage(" ⭐⭐⭐ New Highest XP Reached! CONGRATULATION ! Highest Score :"+ totalXP);
                             dialog.setCancelable(false);
                             dialog.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     finish();
 
-                                    Intent intent = new Intent(view.getContext(), MainActivity.class);
+                                    Intent intent = new Intent(view.getContext(), GameActivity.class);
                                     intent.putExtra(XP_TEXT_EXTRA, customActionBarBinding.xpText.getText().toString());
                                     startActivity(intent);
                                 }
@@ -213,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 finish();
 
-                                Intent intent = new Intent(view.getContext(), MainActivity.class);
+                                Intent intent = new Intent(view.getContext(), GameActivity.class);
                                 intent.putExtra(XP_TEXT_EXTRA, customActionBarBinding.xpText.getText().toString());
                                 startActivity(intent);
                             }
@@ -229,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                         new AlertDialog.Builder(view.getContext()).setMessage("Unfortunately! You Lost the Round!").create().show();
                         finish();
 
-                        Intent intent = new Intent(view.getContext(), MainActivity.class);
+                        Intent intent = new Intent(view.getContext(), GameActivity.class);
                         startActivity(intent);
                     }
                     customActionBarBinding.tvLivesLeft.setText(String.valueOf(livesLeft));
@@ -340,36 +347,6 @@ public class MainActivity extends AppCompatActivity {
 
                 alreadySetTimelineDescriptionIndices.add(randomNumber);
                 timeLineDescriptionTv.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-            }
-        }
-
-    }
-
-    private void shuffleAndSetTimelineDescriptionsTexts(Timeline chosenTimeline) {
-
-        ArrayList<Integer> alreadySetTimelineDescriptionIndices = new ArrayList<>(gameViewModel.correctAnsweredEvents);
-        while (alreadySetTimelineDescriptionIndices.size() != MAX_EVENTS_SIZE) {
-            Random random = new Random();
-
-            int randomNumber = random.nextInt(MAX_EVENTS_SIZE);
-            if (!alreadySetTimelineDescriptionIndices.contains(randomNumber)) {
-                alreadySetTimelineDescriptionIndices.add(randomNumber);
-
-                if (alreadySetTimelineDescriptionIndices.size() == 1) {
-                    activityMainBinding.timelineDesc1.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-                }
-
-                if (alreadySetTimelineDescriptionIndices.size() == 2) {
-                    activityMainBinding.timelineDesc2.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-                }
-
-                if (alreadySetTimelineDescriptionIndices.size() == 3) {
-                    activityMainBinding.timelineDesc3.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-                }
-
-                if (alreadySetTimelineDescriptionIndices.size() == 4) {
-                    activityMainBinding.timelineDesc4.setText(chosenTimeline.getTimeLineCorrectAnswers().get(randomNumber));
-                }
             }
         }
     }

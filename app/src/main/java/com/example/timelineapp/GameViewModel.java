@@ -13,12 +13,6 @@ public class GameViewModel extends ViewModel {
     public void setChosenTimeline(Timeline chosenTimeline) {
         this.chosenTimeline = chosenTimeline;
     }
-
-    public Timeline getChosenTimeline() {
-        return chosenTimeline;
-
-    }
-
     public void addCorrectAnsweredEventInList(Integer eventIndex) {
         if (!correctAnsweredEvents.contains(eventIndex)){
             correctAnsweredEvents.add(eventIndex);

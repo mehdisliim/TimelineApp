@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent">
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@drawable/form_background">
+
+        <ImageView
+                android:layout_width="69dp"
+                android:layout_height="74dp"
+                android:layout_gravity="left"
+                android:layout_marginTop="16dp"
+                android:contentDescription="Profile Picture"
+                android:src="@drawable/hourglass_logo" />
+
+        <ImageView
+            android:id="@+id/iv_profile_picture"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center"
+            android:contentDescription="Profile Picture"
+            android:scaleType="centerCrop"
+            android:src="@drawable/user_pic" />
+
+        <TextView
+            android:id="@+id/tv_fullName"
+            android:layout_width="wrap_content"
+
+            android:layout_gravity="center"
+            android:layout_height="wrap_content"
+            android:text="Mehdi Slim"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"/>
+
+        <TextView
+            android:id="@+id/tv_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="mehdi@gmail.com.com"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"/>
+
+
+        <TextView
+            android:id="@+id/tv_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="mehdislim1"
+            android:textSize="14sp"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"/>
+
+        <TextView
+            android:id="@+id/tv_highest_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Highest Score : 510 XP"
+            android:textSize="14sp"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"/>
+
+        <Button
+            android:id="@+id/btn_start_game"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start_game"
+            android:padding="12dp"
+            android:layout_marginTop="20dp"
+            android:background="@color/soft_blue"
+            android:textColor="@android:color/white"/>
+</LinearLayout>
+</ScrollView>
